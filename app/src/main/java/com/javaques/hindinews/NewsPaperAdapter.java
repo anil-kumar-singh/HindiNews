@@ -1,6 +1,8 @@
 package com.javaques.hindinews;
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,13 +35,32 @@ public class NewsPaperAdapter extends RecyclerView.Adapter<NewsPaperAdapter.MyVi
         View view = inflater.inflate(R.layout.website_list_item, viewGroup, false);
         MyViewHolder holder = new MyViewHolder(view);
 
+
+
+
         return holder;
     }
 
+
+
     @Override
     public void onBindViewHolder(MyViewHolder myViewHolder, int i) {
-        myViewHolder.imageView.setImageResource(newsPapers.get(i).getLogo());
-        myViewHolder.textView.setText(newsPapers.get(i).getName());
+
+        final NewsPaper newsPaper = newsPapers.get(i);
+        myViewHolder.imageView.setImageResource(newsPaper.getLogo());
+        myViewHolder.textView.setText(newsPaper.getName());
+
+        myViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent = new Intent(mContext, NewsActivity.class);
+
+                intent.putExtra("news_paper", newsPaper);
+                mContext.startActivity(intent);
+
+            }
+        });
     }
 
     @Override
