@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.javaques.hindinews.data.NewsCategory;
 import com.javaques.hindinews.data.NewsPaper;
 
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class NewsActivity extends AppCompatActivity {
     ViewPager viewPager;
     TabLayout tabLayout;
     SlidingTabPagerAdapter adapter;
-    static List<String> tabs  = new ArrayList<>();
+    static List<NewsCategory> tabs  = new ArrayList<>();
     static NewsPaper newsPaper;
 
     @Override
@@ -35,7 +36,7 @@ public class NewsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_news);
         setToolbar();
         newsPaper = getIntent().getParcelableExtra("news_paper");
-
+        tabs = newsPaper.getListOfCategories();
 
         setTabs();
     }
@@ -46,6 +47,7 @@ public class NewsActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
     private void setTabs(){
+
         viewPager = (ViewPager) findViewById(R.id.pager);
         adapter = new SlidingTabPagerAdapter((FragmentManager)getSupportFragmentManager());
         viewPager.setAdapter(adapter);
@@ -82,12 +84,7 @@ public class NewsActivity extends AppCompatActivity {
 
          public SlidingTabPagerAdapter(FragmentManager fm) {
              super(fm);
-             tabs.add("TAB 1");
-             tabs.add("TAB 2");
-             tabs.add("TAB 3");
-             tabs.add("TAB 4");
-             tabs.add("TAB 5");
-             tabs.add("TAB 6");
+
 
          }
 
@@ -102,7 +99,7 @@ public class NewsActivity extends AppCompatActivity {
         }
          @Override
          public CharSequence getPageTitle(int position) {
-             return "Tab " + (position + 1);
+             return tabs.get(position).getTitle();
          }
     }
 
@@ -121,7 +118,10 @@ public class NewsActivity extends AppCompatActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.fragment_news, container, false);
             TextView tv = (TextView) view.findViewById(R.id.textView);
-            tv.setText("this is tab "+(getArguments().getInt("position") + 1) + " of " + newsPaper.getName());
+            int position = getArguments().getInt("position");
+            tv.setText(newsPaper.getName()+"\n");
+            tv.append((newsPaper.getListOfCategories()).get(position).getTitle() +"\n");
+            tv.append((newsPaper.getListOfCategories()).get(position).getUrl());
             return view;
         }
     }

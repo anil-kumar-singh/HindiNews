@@ -44,12 +44,18 @@ public class NewsPaperAdapter extends RecyclerView.Adapter<NewsPaperAdapter.MyVi
 
 
     @Override
-    public void onBindViewHolder(MyViewHolder myViewHolder, int i) {
+    public void onBindViewHolder(MyViewHolder myViewHolder, int position) {
 
-        final NewsPaper newsPaper = newsPapers.get(i);
+        final NewsPaper newsPaper = newsPapers.get(position);
         myViewHolder.imageView.setImageResource(newsPaper.getLogo());
         myViewHolder.textView.setText(newsPaper.getName());
-
+//adding animation
+        if (position > previousPosition) {
+            AnimationUtil.animate(myViewHolder, true); // we are scrolling doun
+        } else {
+            AnimationUtil.animate(myViewHolder, false); // we are scrolling up
+        }
+        previousPosition = position;
         myViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
