@@ -1,5 +1,6 @@
 package com.javaques.hindinews;
 
+import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -9,6 +10,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,7 +20,9 @@ import android.widget.TextView;
 
 import com.javaques.hindinews.data.NewsCategory;
 import com.javaques.hindinews.data.NewsPaper;
+import com.squareup.okhttp.OkHttpClient;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,8 +31,10 @@ public class NewsActivity extends AppCompatActivity {
     ViewPager viewPager;
     TabLayout tabLayout;
     SlidingTabPagerAdapter adapter;
-    static List<NewsCategory> tabs  = new ArrayList<>();
+    static List<NewsCategory> tabs = new ArrayList<>();
     static NewsPaper newsPaper;
+    static  TextView tv;
+    private static final String TAG = "NewsActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,12 +52,13 @@ public class NewsActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
-    private void setTabs(){
+
+    private void setTabs() {
 
         viewPager = (ViewPager) findViewById(R.id.pager);
-        adapter = new SlidingTabPagerAdapter((FragmentManager)getSupportFragmentManager());
+        adapter = new SlidingTabPagerAdapter((FragmentManager) getSupportFragmentManager());
         viewPager.setAdapter(adapter);
-        tabLayout = (TabLayout)findViewById(R.id.sliding_tabs);
+        tabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
         tabLayout.setupWithViewPager(viewPager);
 
     }
@@ -79,16 +86,16 @@ public class NewsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-     static class SlidingTabPagerAdapter extends FragmentStatePagerAdapter {
+    static class SlidingTabPagerAdapter extends FragmentStatePagerAdapter {
 
 
-         public SlidingTabPagerAdapter(FragmentManager fm) {
-             super(fm);
+        public SlidingTabPagerAdapter(FragmentManager fm) {
+            super(fm);
 
 
-         }
+        }
 
-         @Override
+        @Override
         public Fragment getItem(int position) {
             return NewsFragment.getInstance(position);
         }
@@ -97,15 +104,16 @@ public class NewsActivity extends AppCompatActivity {
         public int getCount() {
             return tabs.size();
         }
-         @Override
-         public CharSequence getPageTitle(int position) {
-             return tabs.get(position).getTitle();
-         }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return tabs.get(position).getTitle();
+        }
     }
 
-    public static class NewsFragment extends Fragment{
+    public static class NewsFragment extends Fragment {
 
-        public static NewsFragment getInstance(int position){
+        public static NewsFragment getInstance(int position) {
             NewsFragment newsFragment = new NewsFragment();
             Bundle bundle = new Bundle();
             bundle.putInt("position", position);
@@ -117,12 +125,38 @@ public class NewsActivity extends AppCompatActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.fragment_news, container, false);
-            TextView tv = (TextView) view.findViewById(R.id.textView);
+            tv = (TextView) view.findViewById(R.id.textView);
             int position = getArguments().getInt("position");
-            tv.setText(newsPaper.getName()+"\n");
-            tv.append((newsPaper.getListOfCategories()).get(position).getTitle() +"\n");
-            tv.append((newsPaper.getListOfCategories()).get(position).getUrl());
+            new DownlodTask().execute((newsPaper.getListOfCategories()).get(position).getUrl());
+
+
             return view;
+        }
+
+
+
+
+    }
+
+    static class DownlodTask extends AsyncTask<String, Void, String>{
+
+
+
+        @Override
+        protected String doInBackground(String... params) {
+            FeedDownloader downloader = new FeedDownloader();
+            String feed = null;
+            try {
+                feed = downloader.run(params[0]);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return feed;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            tv.setText(s);
         }
     }
 
