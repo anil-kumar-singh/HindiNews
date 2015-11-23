@@ -49,7 +49,7 @@ public class NewsPaperAdapter extends RecyclerView.Adapter<NewsPaperAdapter.MyVi
         final NewsPaper newsPaper = newsPapers.get(position);
         myViewHolder.imageView.setImageResource(newsPaper.getLogo());
         myViewHolder.textView.setText(newsPaper.getName());
-//adding animation
+        //adding animation
         if (position > previousPosition) {
             AnimationUtil.animate(myViewHolder, true); // we are scrolling doun
         } else {

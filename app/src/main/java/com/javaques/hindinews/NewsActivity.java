@@ -1,5 +1,8 @@
 package com.javaques.hindinews;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
@@ -9,6 +12,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,6 +27,7 @@ import com.javaques.hindinews.data.NewsPaper;
 import com.squareup.okhttp.OkHttpClient;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,24 +38,30 @@ public class NewsActivity extends AppCompatActivity {
     SlidingTabPagerAdapter adapter;
     static List<NewsCategory> tabs = new ArrayList<>();
     static NewsPaper newsPaper;
-    static  TextView tv;
+    static TextView tv;
     private static final String TAG = "NewsActivity";
+    static private RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_news);
-        setToolbar();
         newsPaper = getIntent().getParcelableExtra("news_paper");
+        setToolbar();
+
         tabs = newsPaper.getListOfCategories();
 
         setTabs();
+
+
     }
 
     private void setToolbar() {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle(newsPaper.getName());
+
     }
 
     private void setTabs() {
@@ -62,6 +73,7 @@ public class NewsActivity extends AppCompatActivity {
         tabLayout.setupWithViewPager(viewPager);
 
     }
+
 
 
     @Override
@@ -97,7 +109,7 @@ public class NewsActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
-            return NewsFragment.getInstance(position);
+            return NewsFragment.getInstance(newsPaper.getId(), newsPaper.getListOfCategories().get(position).getUrl());
         }
 
         @Override
@@ -111,53 +123,5 @@ public class NewsActivity extends AppCompatActivity {
         }
     }
 
-    public static class NewsFragment extends Fragment {
-
-        public static NewsFragment getInstance(int position) {
-            NewsFragment newsFragment = new NewsFragment();
-            Bundle bundle = new Bundle();
-            bundle.putInt("position", position);
-            newsFragment.setArguments(bundle);
-            return newsFragment;
-        }
-
-        @Nullable
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            View view = inflater.inflate(R.layout.fragment_news, container, false);
-            tv = (TextView) view.findViewById(R.id.textView);
-            int position = getArguments().getInt("position");
-            new DownlodTask().execute((newsPaper.getListOfCategories()).get(position).getUrl());
-
-
-            return view;
-        }
-
-
-
-
-    }
-
-    static class DownlodTask extends AsyncTask<String, Void, String>{
-
-
-
-        @Override
-        protected String doInBackground(String... params) {
-            FeedDownloader downloader = new FeedDownloader();
-            String feed = null;
-            try {
-                feed = downloader.run(params[0]);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return feed;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            tv.setText(s);
-        }
-    }
 
 }
