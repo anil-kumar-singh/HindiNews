@@ -1,5 +1,6 @@
 package com.javaques.hindinews;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
@@ -11,7 +12,11 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -35,11 +40,16 @@ import java.util.List;
  * Created by Anil on 22-Nov-15.
  */
 public class NewsFragment extends Fragment {
+    private static final String TAG = "NewsFragment";
     private RecyclerView recyclerView;
     ProgressBar progressBar;
     static int newsPaperId;
     LinearLayout parentLayout;
     String myurl;
+    Activity mActivity;
+    private static final String STATE_URL = "url";
+    private static final String STATE_ID = "newspaper_id";
+    Snackbar snackbar;
 
 
     public static NewsFragment getInstance(int newspaperId, String url) {
@@ -48,7 +58,23 @@ public class NewsFragment extends Fragment {
         bundle.putInt("newspaper_id", newspaperId);
         bundle.putString("url", url);
         newsFragment.setArguments(bundle);
+        Log.d(TAG, "new instance");
         return newsFragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof Activity) {
+            mActivity = (Activity) context;
+        }
+        Log.d(TAG, "onAttach");
     }
 
     @Nullable
@@ -62,18 +88,53 @@ public class NewsFragment extends Fragment {
         myurl = getArguments().getString("url");
         newsPaperId = getArguments().getInt("newspaper_id");
 
-
+        Log.d(TAG, "onCreateView");
 
         return view;
     }
 
+    /*@Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.d(TAG, "onViewStateRestored");
+        outState.putString(STATE_URL, myurl);
+        outState.putInt(STATE_ID, newsPaperId);
+    }
+*/
+
+
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "on view created");
         load(myurl);
     }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        //inflater.inflate(R.menu.menu_news, menu);
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_refresh) {
+            load(myurl);
+            return true;
+        }
+
+
+
+
+        return super.onOptionsItemSelected(item);
+
+    }
+
     private boolean isOnline() {
-        ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) mActivity.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = cm.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnectedOrConnecting()) {
             return true;
@@ -83,16 +144,22 @@ public class NewsFragment extends Fragment {
 
     }
 
-    private void load( final String url){
+    private void load(final String url) {
+        Log.d(TAG, "start loading");
         if (isOnline()) {
+            Log.d(TAG, "online");
             new DownlodTask().execute(url);
+            if (snackbar!=null && snackbar.isShown()){
+                snackbar.dismiss();
+            }
         } else {
-            Snackbar snackbar = Snackbar
+            Log.d(TAG, "offline");
+            snackbar = Snackbar
                     .make(getView(), "No internet connection!", Snackbar.LENGTH_INDEFINITE)
                     .setAction("RETRY", new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            load(url);
+                        load(url);
                         }
                     });
 
@@ -108,15 +175,19 @@ public class NewsFragment extends Fragment {
         }
     }
 
+
+
     class DownlodTask extends AsyncTask<String, Void, List<News>> {
 
         @Override
         protected void onPreExecute() {
+            Log.d(TAG, "on pre execute");
             progressBar.setVisibility(View.VISIBLE);
         }
 
         @Override
         protected List<News> doInBackground(String... params) {
+            Log.d(TAG, "background task");
             FeedDownloader downloader = new FeedDownloader();
             List<News> newsList = null;
             FeedXmlParser parser = null;
@@ -135,17 +206,21 @@ public class NewsFragment extends Fragment {
 
         @Override
         protected void onPostExecute(List<News> newsList) {
+            Log.d(TAG, "on post execute");
             progressBar.setVisibility(View.GONE);
             updateDisplay(newsList);
         }
     }
 
     private void updateDisplay(List<News> newsList) {
+        if (newsList != null) {
+            Log.d(TAG, "updating display");
+            NewsAdapter adapter = new NewsAdapter(mActivity, newsList);
+            recyclerView.setAdapter(adapter);
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(mActivity);
+            recyclerView.setLayoutManager(linearLayoutManager);
 
-        NewsAdapter adapter = new NewsAdapter(getActivity(), newsList);
-        recyclerView.setAdapter(adapter);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
-        recyclerView.setLayoutManager(linearLayoutManager);
+        }
 
 
     }
