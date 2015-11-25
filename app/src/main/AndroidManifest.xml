@@ -21,10 +21,25 @@
         </activity>
         <activity
             android:name=".NewsActivity"
-            android:label="@string/title_activity_news" />
+            android:label="@string/title_activity_news"
+            android:launchMode="singleTop"
+            android:parentActivityName=".MainActivity">
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+
+
         <activity
             android:name=".FullStory"
-            android:label="@string/title_activity_full_story" >
+            android:label="@string/title_activity_full_story"
+            android:parentActivityName=".NewsActivity"
+            >
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".NewsActivity" />
         </activity>
     </application>
 

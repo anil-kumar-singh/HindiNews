@@ -32,7 +32,7 @@ public class NewsPaperAdapter extends RecyclerView.Adapter<NewsPaperAdapter.MyVi
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-        View view = inflater.inflate(R.layout.website_list_item, viewGroup, false);
+        View view = inflater.inflate(R.layout.website_grid_item, viewGroup, false);
         MyViewHolder holder = new MyViewHolder(view);
 
 

@@ -64,8 +64,9 @@ List<News> newsList;
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                Toast.makeText(mContext, news.getLink(), Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(mContext, FullStory.class);
+                intent.putExtra("story_url", news.getLink());
+                mContext.startActivity(intent);
 
             }
         });

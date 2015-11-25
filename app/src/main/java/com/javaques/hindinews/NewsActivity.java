@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.PersistableBundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -41,20 +42,31 @@ public class NewsActivity extends AppCompatActivity {
     static TextView tv;
     private static final String TAG = "NewsActivity";
     static private RecyclerView recyclerView;
+    private static final String STATE_NEWS_PAPER_OBJ = "news_paper_obj";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_news);
-        newsPaper = getIntent().getParcelableExtra("news_paper");
+        if(savedInstanceState != null) {
+            newsPaper = savedInstanceState.getParcelable(STATE_NEWS_PAPER_OBJ);
+        }else{
+                newsPaper = getIntent().getParcelableExtra("news_paper");
+        }
         setToolbar();
-
         tabs = newsPaper.getListOfCategories();
-
         setTabs();
 
-
     }
+
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelable(STATE_NEWS_PAPER_OBJ, newsPaper);
+        super.onSaveInstanceState(outState);
+    }
+
+
 
     private void setToolbar() {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -65,7 +77,6 @@ public class NewsActivity extends AppCompatActivity {
     }
 
     private void setTabs() {
-
         viewPager = (ViewPager) findViewById(R.id.pager);
         adapter = new SlidingTabPagerAdapter((FragmentManager) getSupportFragmentManager());
         viewPager.setAdapter(adapter);

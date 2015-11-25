@@ -5,9 +5,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Surface;
+import android.view.WindowManager;
 
 import com.javaques.hindinews.data.DataCreater;
 import com.javaques.hindinews.data.NewsPaper;
@@ -20,6 +24,8 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     NewsPaperAdapter adapter;
     List<NewsPaper> listOfNewsPapers;
+    private static final int PORTRAIT = 1;
+    private static final int LANDSCAPE = 2;
 
 
     @Override
@@ -44,8 +50,30 @@ public class MainActivity extends AppCompatActivity {
         adapter = new NewsPaperAdapter(this, listOfNewsPapers);
         recyclerView.setAdapter(adapter);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(linearLayoutManager);
+        StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(getGridColums(), StaggeredGridLayoutManager.VERTICAL);
+        recyclerView.setLayoutManager(staggeredGridLayoutManager);
 
+    }
+    private int getGridColums(){
+        if(getCurrentOrientation() == PORTRAIT){
+            return 2;
+        }else {
+            return 3;
+        }
+    }
+
+    private int getCurrentOrientation(){
+        Display display = ((WindowManager) getSystemService(WINDOW_SERVICE))
+                .getDefaultDisplay();
+
+        int orientation = display.getRotation();
+
+        if (orientation == Surface.ROTATION_90
+                || orientation == Surface.ROTATION_270) {
+           return LANDSCAPE;
+        }else{
+            return PORTRAIT;
+        }
     }
     private void prepareNewsPapersList() {
         listOfNewsPapers = new ArrayList<NewsPaper>();
